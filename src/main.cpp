@@ -117,8 +117,8 @@ void updateBacklight(const struct tm &timeinfo)
 
 void setup()
 {
-    // Serial.begin(115200); /* prepare for possible serial debug */
-    // String LVGL_Arduino = "Hello Arduino! ";
+     Serial.begin(115200); /* prepare for possible serial debug */
+     String LVGL_Arduino = "Hello Arduino! ";
     // LVGL_Arduino += String('V') + lv_version_major() + "." + lv_version_minor() + "." + lv_version_patch();
     // Serial.println(LVGL_Arduino);
     // Serial.println("I am LVGL_Arduino");
@@ -146,9 +146,32 @@ void setup()
     lv_tick_set_cb(my_tick_get_cb);
 
     ui_init();
+
+    lv_obj_add_event_cb(ui_WifiIcon,
+                        wifi_icon_event_cb,
+                        LV_EVENT_CLICKED,
+                        NULL);
+
+    lv_obj_add_event_cb(
+        ui_WiFiPass,
+        wifi_password_event_cb,
+        LV_EVENT_CLICKED,
+        NULL);
+
+    lv_obj_add_event_cb(
+        ui_Network,
+        network_event_cb,
+        LV_EVENT_VALUE_CHANGED,
+        NULL);
+
+    lv_obj_add_event_cb(
+        ui_Keyboard,
+        keyboard_event_cb,
+        LV_EVENT_READY,
+        NULL);
+
     delay(10);
-    //  wifiTimeInit();
-    //  tuyaInit();
+
     Serial.println("Setup done");
 }
 
@@ -157,5 +180,6 @@ void loop()
     lv_timer_handler();
     wifiTimeLoop();
     tuyaLoop(); /* let the GUI do its work */
+    wifi_scan_check();
     delay(5);
 }

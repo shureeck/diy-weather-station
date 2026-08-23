@@ -4,11 +4,57 @@
 #include <time.h>
 #include <lvgl.h>
 #include "ui.h"
+#include <Preferences.h>
 
 //==================== WIFI ====================
 
-const char *WIFI_SSID = "Feel WifiName";
-const char *WIFI_PASS = "Feel WiFi password";
+static Preferences preferences;
+
+static String savedSSID;
+static String savedPassword;
+
+static bool wifiScanning = false;
+static bool wifiScanRequest = false;
+static int wifiNetworkCount = 0;
+
+static bool loadWiFiCredentials()
+{
+    preferences.begin("wifi", true);
+
+    savedSSID = preferences.getString("ssid", "");
+    savedPassword = preferences.getString("password", "");
+    Serial.println("Load credentials");
+    Serial.println(savedSSID);
+    Serial.println(savedPassword);
+
+    preferences.end();
+
+    return savedSSID.length() > 0;
+}
+
+static void saveWiFiCredentials(
+    const char *ssid,
+    const char *password)
+{
+    preferences.begin("wifi", false);
+    preferences.putString("ssid", ssid);
+    preferences.putString("password", password);
+    preferences.end();
+    savedSSID = ssid;
+    savedPassword = password;
+    Serial.println("Save wifi creds");
+    Serial.println(savedSSID);
+    Serial.println(savedPassword);
+
+    // Hide keyboard
+    lv_obj_add_flag(ui_Keyboard, LV_OBJ_FLAG_HIDDEN);
+
+    // Hide WiFi preferences panel
+    lv_obj_add_flag(ui_WiFiPref, LV_OBJ_FLAG_HIDDEN);
+
+    // Remove keyboard from textarea
+    lv_keyboard_set_textarea(ui_Keyboard, NULL);
+}
 
 //==================== TIME ====================
 
@@ -40,53 +86,142 @@ static void updateTimeLabels()
 
 void wifiTimeInit()
 {
+
+    Serial.println("Wifi");
+
     lv_label_set_text(ui_WiFiLabel, "WiFi...");
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
 
-    uint32_t start = millis();
-
-    while (WiFi.status() != WL_CONNECTED && millis() - start < 20000)
+    if (loadWiFiCredentials())
     {
-        delay(200);
-    }
+        Serial.print("Connecting to saved WiFi: ");
+        Serial.println(savedSSID);
 
-    if (WiFi.status() != WL_CONNECTED)
-    {
-        lv_label_set_text(ui_WiFiLabel, "No WiFi");
-        return;
-    }
-
-    lv_label_set_text(ui_WiFiLabel, WiFi.SSID().c_str());
-
-    // ==========================================
-    // ВАРШАВА: CET зимой / CEST летом
-    // ==========================================
-
-    configTime(
-        7200,
-        1,
-        "pol.ntp.org");
-
-    struct tm timeinfo;
-
-    if (getLocalTime(&timeinfo, 15000))
-    {
-        timeReady = true;
-        updateTimeLabels();
+        WiFi.begin(
+            savedSSID.c_str(),
+            savedPassword.c_str());
     }
     else
     {
-        timeReady = false;
-        Serial.println("NTP TIME FAILED");
+        Serial.println("No saved WiFi");
+
+        lv_label_set_text(
+            ui_WiFiLabel,
+            "No WiFi");
     }
 
     lastNtpSync = millis();
     lastMinuteUpdate = millis();
 }
+
+void wifi_start_scan()
+{
+    if (wifiScanning)
+        return;
+
+    wifiScanning = true;
+
+    // Clear old data
+    lv_dropdown_clear_options(ui_Network);
+
+    // Text while scan
+    lv_dropdown_set_options(ui_Network, "Scanning...");
+
+    WiFi.mode(WIFI_STA);
+
+    // Async scan
+    WiFi.scanNetworks(true);
+}
+
+void wifi_icon_event_cb(lv_event_t *e)
+{
+    Serial.println("Click");
+    if (lv_event_get_code(e) != LV_EVENT_CLICKED)
+        return;
+
+    if (lv_obj_has_flag(ui_WiFiPref, LV_OBJ_FLAG_HIDDEN))
+    {
+        // Keyboard is hidden → show it
+        lv_obj_clear_flag(ui_WiFiPref, LV_OBJ_FLAG_HIDDEN);
+    }
+    else
+    {
+        // Keyboard is visible → hide it
+        lv_obj_add_flag(ui_WiFiPref, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(ui_Keyboard, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+
+    // Запускаем сканирование
+    wifiScanRequest = true;
+}
+
+void wifi_scan_check()
+{
+    if (!wifiScanning)
+        return;
+
+    int result = WiFi.scanComplete();
+
+    if (result == WIFI_SCAN_RUNNING)
+        return;
+
+    wifiScanning = false;
+
+    if (result < 0)
+    {
+        lv_dropdown_set_options(ui_Network, "Scan failed");
+        return;
+    }
+
+    lv_dropdown_clear_options(ui_Network);
+
+    bool firstNetwork = true;
+
+    for (int i = 0; i < result; i++)
+    {
+        String ssid = WiFi.SSID(i);
+
+        if (ssid.length() == 0)
+            continue;
+
+        if (firstNetwork)
+        {
+            lv_dropdown_set_options(
+                ui_Network,
+                ssid.c_str());
+
+            firstNetwork = false;
+        }
+        else
+        {
+            lv_dropdown_add_option(
+                ui_Network,
+                ssid.c_str(),
+                LV_DROPDOWN_POS_LAST);
+        }
+    }
+
+    if (firstNetwork)
+    {
+        lv_dropdown_set_options(
+            ui_Network,
+            "No networks found");
+    }
+
+    WiFi.scanDelete();
+}
+
 void wifiTimeLoop()
 {
+    if (wifiScanRequest)
+    {
+        wifiScanRequest = false;
+        wifi_start_scan();
+    }
+    wifi_scan_check();
+
     static uint32_t reconnectTimer = 0;
     static bool connectedShown = false;
 
@@ -100,7 +235,8 @@ void wifiTimeLoop()
             reconnectTimer = millis();
 
             WiFi.disconnect();
-            WiFi.begin(WIFI_SSID, WIFI_PASS);
+            loadWiFiCredentials();
+            WiFi.begin(savedSSID, savedPassword);
         }
 
         lv_label_set_text(ui_WiFiLabel, "No WiFi");
@@ -149,5 +285,58 @@ void wifiTimeLoop()
             timeReady = true;
             updateTimeLabels();
         }
+    }
+}
+
+void network_event_cb(lv_event_t *e)
+{
+    if (lv_event_get_code(e) != LV_EVENT_VALUE_CHANGED)
+        return;
+
+    char ssid[64];
+
+    lv_dropdown_get_selected_str(
+        ui_Network,
+        ssid,
+        sizeof(ssid));
+
+    Serial.print("WiFi selected: ");
+    Serial.println(ssid);
+}
+
+void wifi_password_event_cb(lv_event_t *e)
+{
+    if (lv_event_get_code(e) != LV_EVENT_CLICKED)
+        return;
+
+    // Показываем клавиатуру
+    lv_obj_clear_flag(ui_Keyboard, LV_OBJ_FLAG_HIDDEN);
+
+    // Привязываем клавиатуру к TextArea
+    lv_keyboard_set_textarea(
+        ui_Keyboard,
+        ui_WiFiPass);
+}
+
+void saveWiFiCredentials()
+{
+    char ssid[64];
+
+    lv_dropdown_get_selected_str(
+        ui_Network,
+        ssid,
+        sizeof(ssid));
+
+    const char *password = lv_textarea_get_text(ui_WiFiPass);
+
+    saveWiFiCredentials(ssid, password);
+    wifiTimeInit();
+}
+
+void keyboard_event_cb(lv_event_t *e)
+{
+    if (lv_event_get_code(e) == LV_EVENT_READY)
+    {
+        saveWiFiCredentials();
     }
 }

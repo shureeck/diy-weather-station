@@ -26,9 +26,9 @@
     "separate_screen_save": false,
     "hierarchy_state_save": false,
     "reverse_event_order": false,
-    "backup_cnt": 26,
+    "backup_cnt": 29,
     "autosave_cnt": 0,
-    "group_color_cnt": 1,
+    "group_color_cnt": 2,
     "imagebytearrayprefix": "",
     "lvgl_version": "9.1.0",
     "callfuncsexport": "C_FILE",
@@ -37,5 +37,5 @@
     "naming": "Name",
     "naming_force_lowercase": false,
     "naming_add_subcomponent": false,
-    "nidcnt": 1000210
+    "nidcnt": 1000227
 }

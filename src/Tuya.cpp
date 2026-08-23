@@ -4,15 +4,9 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <mbedtls/md.h>
+#include "config.h"
 
 #include "ui.h"
-
-static const char *CLIENT_ID = "Feel Tuya ClientID";
-
-static const char *SECRET = "Feel Tuya SecretID";;
-
-static const char *DEVICE_ID = "Feel Inner temperature sensor ID";
-static const char *DEVICE_STREET_ID = "Feel Outer temperature sensor ID";
 
 static String accessToken;
 
@@ -76,20 +70,20 @@ bool getAccessToken()
         hmacSHA256(
             SECRET,
             signPayload);
-/*
-    Serial.println("====== TUYA DEBUG ======");
-    Serial.println("timestamp:");
-    Serial.println(timestamp);
+    /*
+        Serial.println("====== TUYA DEBUG ======");
+        Serial.println("timestamp:");
+        Serial.println(timestamp);
 
-    Serial.println("stringToSign:");
-    Serial.println(stringToSign);
+        Serial.println("stringToSign:");
+        Serial.println(stringToSign);
 
-    Serial.println("payload:");
-    Serial.println(signPayload);
+        Serial.println("payload:");
+        Serial.println(signPayload);
 
-    Serial.println("sign:");
-    Serial.println(sign);
-*/
+        Serial.println("sign:");
+        Serial.println(sign);
+    */
     http.begin(
         "https://openapi.tuyaeu.com/v1.0/token?grant_type=1");
 
@@ -112,9 +106,9 @@ bool getAccessToken()
     int code = http.GET();
 
     String response = http.getString();
-/*
-    Serial.println(response);
-*/
+    /*
+        Serial.println(response);
+    */
     if (code != HTTP_CODE_OK)
     {
         http.end();
@@ -133,7 +127,7 @@ bool getAccessToken()
 
 void getDeviceFromResponse(JsonDocument doc, String deviceId, lv_obj_t *tempLabel, lv_obj_t *humLabel)
 {
-      JsonArray arr =
+    JsonArray arr =
         doc["result"][deviceId].as<JsonArray>();
     int temp = 0;
     int hum = 0;
@@ -163,8 +157,7 @@ void readDevice()
         String((uint64_t)time(nullptr) * 1000ULL);
     String url =
         "/v1.0/devices/status?device_ids=" +
-        String(DEVICE_ID)
-        + ","+ String(DEVICE_STREET_ID);
+        String(DEVICE_ID) + "," + String(DEVICE_STREET_ID);
     String bodyHash =
         "e3b0c44298fc1c149afbf4c8996fb924"
         "27ae41e4649b934ca495991b7852b855";
