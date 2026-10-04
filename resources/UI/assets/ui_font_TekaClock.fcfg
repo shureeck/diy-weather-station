@@ -1,0 +1,16 @@
+{
+  "codename": "TekaClock",
+  "ttf_path": "/assets/Teko-Regular.ttf",
+  "bin_path": "/assets\\ui_font_TekaClock.bin",
+  "c_path": "/assets\\ui_font_TekaClock.c",
+  "cfg_path": "/assets\\ui_font_TekaClock.fcfg",
+  "size": 100,
+  "bpp": 1,
+  "letters": 0,
+  "ranges": [
+    "0x20-0x7f"
+  ],
+  "symbols": " 1234567890:C",
+  "customparams": "--no-compress --no-prefilter",
+  "uploaded": false
+}

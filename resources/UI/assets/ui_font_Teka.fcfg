@@ -1,0 +1,16 @@
+{
+  "codename": "Teka",
+  "ttf_path": "/assets/Teko-Regular.ttf",
+  "bin_path": "/assets\\ui_font_Teka.bin",
+  "c_path": "/assets\\ui_font_Teka.c",
+  "cfg_path": "/assets\\ui_font_Teka.fcfg",
+  "size": 53,
+  "bpp": 1,
+  "letters": 0,
+  "ranges": [
+    "0x20-0x7f"
+  ],
+  "symbols": " 1234567890:C°",
+  "customparams": "--no-compress --no-prefilter",
+  "uploaded": false
+}

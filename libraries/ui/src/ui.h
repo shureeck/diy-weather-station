@@ -39,18 +39,17 @@ extern "C" {
 extern lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
-LV_IMG_DECLARE(ui_img_home_png_png);    // assets/home_png.png
 LV_IMG_DECLARE(ui_img_home_png);    // assets/home.png
-LV_IMG_DECLARE(ui_img_intemp_png);    // assets/inTemp.png
 LV_IMG_DECLARE(ui_img_dropin_png);    // assets/dropIn.png
-LV_IMG_DECLARE(ui_img_out_bg_png_png);    // assets/out_bg_png.png
 LV_IMG_DECLARE(ui_img_tree_png);    // assets/tree.png
-LV_IMG_DECLARE(ui_img_outtemp_png);    // assets/outTemp.png
 LV_IMG_DECLARE(ui_img_humout_png);    // assets/humOut.png
 LV_IMG_DECLARE(ui_img_wifi_png);    // assets/wifi.png
 
 // FONTS
 LV_FONT_DECLARE(ui_font_Font1);
+LV_FONT_DECLARE(ui_font_Teka);
+LV_FONT_DECLARE(ui_font_Teka118);
+LV_FONT_DECLARE(ui_font_TekaClock);
 
 // UI INIT
 void ui_init(void);

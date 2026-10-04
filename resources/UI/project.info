@@ -1,7 +1,14 @@
 {
     "project_name": "SmartH.spj",
+<<<<<<< Updated upstream
     "datetime": "2026-08-22T16:18:08.6023343+02:00",
     "editor_version": "1.6.1",
     "project_version": 4,
     "user": " "
+=======
+    "datetime": "2026-10-04T21:57:18.7340967+02:00",
+    "editor_version": "1.6.1",
+    "project_version": 5,
+    "user": "Poliakov Oleksandr"
+>>>>>>> Stashed changes
 }
