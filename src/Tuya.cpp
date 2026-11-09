@@ -9,8 +9,9 @@
 #include "ui.h"
 
 static String accessToken;
-
+static uint32_t tokenExpiresAt = 0;
 static uint32_t lastUpdate = 0;
+static bool firstDone = false;
 
 uint64_t getTimestamp()
 {
@@ -121,37 +122,62 @@ bool getAccessToken()
     accessToken =
         doc["result"]["access_token"]
             .as<String>();
+    uint32_t expireSec = doc["result"]["expire_time"] | 7200;
+    tokenExpiresAt = millis() + (expireSec - 210) * 1000UL;
     http.end();
     return accessToken.length() > 0;
 }
 
-void getDeviceFromResponse(JsonDocument doc, String deviceId, lv_obj_t *tempLabel, lv_obj_t *humLabel)
+bool ensureToken()
 {
-    JsonArray arr =
-        doc["result"][deviceId].as<JsonArray>();
-    int temp = 0;
-    int hum = 0;
-    for (JsonObject item : arr)
-    {
-        String code = item["code"];
-        if (code == "va_temperature")
-        {
-            int rawTemp = item["value"].as<int>();
-            temp = (rawTemp + 5) / 10;
-        }
-        if (code == "va_humidity")
-        {
-            int rawHum = item["value"].as<int>();
-            hum = (rawHum + 5) / 10;
-        }
-    }
-    lv_label_set_text_fmt(tempLabel, "%d", temp);
-    lv_label_set_text_fmt(humLabel, "%d", hum);
+    if (accessToken.length() > 0 && (int32_t)(millis() - tokenExpiresAt) < 0)
+        return true; // token is alive
+
+    return getAccessToken();
 }
 
-void readDevice()
+void getDeviceFromResponse(const JsonDocument &doc, const char *deviceId, lv_obj_t *tempLabel, lv_obj_t *humLabel)
 {
-    getAccessToken();
+    JsonArrayConst arr = doc["result"][deviceId].as<JsonArrayConst>();
+
+    int temp = 0, hum = 0;
+    bool hasTemp = false, hasHum = false;
+
+    for (JsonObjectConst item : arr)
+    {
+        const char *code = item["code"] | "";
+
+        if (strcmp(code, "va_temperature") == 0)
+        {
+            hasTemp = true;
+            temp = lroundf(item["value"].as<int>() / 10.0f);
+        }
+        else if (strcmp(code, "va_humidity") == 0)
+        {
+            hasHum = true;
+            hum = lroundf(item["value"].as<int>() / 10.0f);
+        }
+    }
+
+    if (hasTemp)
+        lv_label_set_text_fmt(tempLabel, "%d", temp);
+    else
+        lv_label_set_text(tempLabel, "ER");
+
+    if (hasHum)
+        lv_label_set_text_fmt(humLabel, "%d", hum);
+    else
+        lv_label_set_text(humLabel, "ER");
+}
+
+bool readDevice()
+{
+    if (WiFi.status() != WL_CONNECTED)
+        return false;
+    if (time(nullptr) < 1700000000)
+        return false; // NTP ещё не синхронизирован
+    if (!ensureToken())
+        return false; // failed to get token
     HTTPClient http;
     String timestamp =
         String((uint64_t)time(nullptr) * 1000ULL);
@@ -178,10 +204,10 @@ void readDevice()
             SECRET,
             signPayload);
 
-    Serial.println("===== DEVICE DEBUG =====");
-    Serial.println(timestamp);
-    Serial.println(stringToSign);
-    Serial.println(sign);
+    // Serial.println("===== DEVICE DEBUG =====");
+    // Serial.println(timestamp);
+    // Serial.println(stringToSign);
+    // Serial.println(sign);
 
     http.begin(
         "https://openapi.tuyaeu.com" + url);
@@ -215,10 +241,20 @@ void readDevice()
 
     JsonDocument doc;
     deserializeJson(doc, response);
-
     getDeviceFromResponse(doc, DEVICE_ID, ui_inTemp, ui_inHum);
     getDeviceFromResponse(doc, DEVICE_STREET_ID, ui_outTemp, ui_outHum);
+    if (!doc["success"].as<bool>())
+    {
+        int errCode = doc["code"] | 0;
+        // 1010 - token invalid, 1011 - token expired
+        if (errCode == 1010 || errCode == 1011)
+            accessToken = "";
+        http.end();
+        return false;
+    }
+
     http.end();
+    return true;
 }
 
 void tuyaInit()
@@ -228,10 +264,15 @@ void tuyaInit()
 
 void tuyaLoop()
 {
-    if (millis() - lastUpdate < 60000)
+    uint32_t interval = firstDone ? 300000 : 20000; // до первого успеха пробуем каждые 20 с
+
+    if (lastUpdate != 0 && millis() - lastUpdate < interval)
         return;
 
     lastUpdate = millis();
+    if (lastUpdate == 0)
+        lastUpdate = 1;
 
-    readDevice();
+    if (readDevice())
+        firstDone = true;
 }

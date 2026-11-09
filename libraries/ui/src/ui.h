@@ -43,6 +43,9 @@ LV_IMG_DECLARE(ui_img_home_png);    // assets/home.png
 LV_IMG_DECLARE(ui_img_dropin_png);    // assets/dropIn.png
 LV_IMG_DECLARE(ui_img_tree_png);    // assets/tree.png
 LV_IMG_DECLARE(ui_img_humout_png);    // assets/humOut.png
+LV_IMG_DECLARE(ui_img_snow_png);    // assets/Snow.png
+LV_IMG_DECLARE(ui_img_default_png);    // assets/Default.png
+LV_IMG_DECLARE(ui_img_rain_png);    // assets/Rain.png
 LV_IMG_DECLARE(ui_img_wifi_png);    // assets/wifi.png
 
 // FONTS

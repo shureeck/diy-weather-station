@@ -250,7 +250,7 @@ void wifiTimeLoop()
 
         lv_label_set_text(ui_WiFiLabel, WiFi.SSID().c_str());
 
-        configTime(7200, 1, "pool.ntp.org");
+        configTime(3600, 1, "pool.ntp.org");
 
         struct tm timeinfo;
 
@@ -276,7 +276,7 @@ void wifiTimeLoop()
     {
         lastNtpSync = millis();
 
-        configTime(7200, 1, "pool.ntp.org");
+        configTime(3600, 1, "pool.ntp.org");
 
         struct tm timeinfo;
 

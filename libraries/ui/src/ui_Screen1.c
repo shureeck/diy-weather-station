@@ -29,6 +29,11 @@ lv_obj_t * ui_clockPanel = NULL;
 lv_obj_t * ui_clockSeparator = NULL;
 lv_obj_t * ui_timeLabel = NULL;
 lv_obj_t * ui_dateLabel = NULL;
+lv_obj_t * ui_Wether = NULL;
+lv_obj_t * ui_RainProbLabel = NULL;
+lv_obj_t * ui_Snow = NULL;
+lv_obj_t * ui_Default = NULL;
+lv_obj_t * ui_Rain = NULL;
 lv_obj_t * ui_WiFiPanel = NULL;
 lv_obj_t * ui_WifiIcon = NULL;
 lv_obj_t * ui_WiFiLabel = NULL;
@@ -297,6 +302,55 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_style_text_opa(ui_dateLabel, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_dateLabel, &ui_font_Teka, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_Wether = lv_obj_create(ui_clockPanel);
+    lv_obj_set_width(ui_Wether, 154);
+    lv_obj_set_height(ui_Wether, 73);
+    lv_obj_set_x(ui_Wether, 0);
+    lv_obj_set_y(ui_Wether, 71);
+    lv_obj_set_align(ui_Wether, LV_ALIGN_CENTER);
+    lv_obj_remove_flag(ui_Wether, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_Wether, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Wether, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_Wether, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_Wether, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_RainProbLabel = lv_label_create(ui_Wether);
+    lv_obj_set_width(ui_RainProbLabel, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_RainProbLabel, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_RainProbLabel, -57);
+    lv_obj_set_y(ui_RainProbLabel, 25);
+    lv_obj_set_align(ui_RainProbLabel, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_RainProbLabel, "--%");
+    lv_obj_set_style_text_color(ui_RainProbLabel, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_RainProbLabel, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Snow = lv_image_create(ui_Wether);
+    lv_image_set_src(ui_Snow, &ui_img_snow_png);
+    lv_obj_set_width(ui_Snow, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Snow, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Snow, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Snow, LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_Snow, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_image_set_scale(ui_Snow, 50);
+
+    ui_Default = lv_image_create(ui_Wether);
+    lv_image_set_src(ui_Default, &ui_img_default_png);
+    lv_obj_set_width(ui_Default, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Default, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Default, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Default, LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_Default, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_image_set_scale(ui_Default, 50);
+
+    ui_Rain = lv_image_create(ui_Wether);
+    lv_image_set_src(ui_Rain, &ui_img_rain_png);
+    lv_obj_set_width(ui_Rain, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Rain, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Rain, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Rain, LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_Rain, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_image_set_scale(ui_Rain, 50);
+
     ui_WiFiPanel = lv_obj_create(ui_Screen1);
     lv_obj_set_height(ui_WiFiPanel, 30);
     lv_obj_set_width(ui_WiFiPanel, lv_pct(100));
@@ -396,6 +450,11 @@ void ui_Screen1_screen_destroy(void)
     ui_clockSeparator = NULL;
     ui_timeLabel = NULL;
     ui_dateLabel = NULL;
+    ui_Wether = NULL;
+    ui_RainProbLabel = NULL;
+    ui_Snow = NULL;
+    ui_Default = NULL;
+    ui_Rain = NULL;
     ui_WiFiPanel = NULL;
     ui_WifiIcon = NULL;
     ui_WiFiLabel = NULL;

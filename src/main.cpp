@@ -6,6 +6,7 @@
 #include "Touch.h"
 #include "WiFiTime.h"
 #include "Tuya.h"
+#include "Weather.h"
 
 #include <ui.h>
 
@@ -179,6 +180,7 @@ void loop()
 {
     lv_timer_handler();
     wifiTimeLoop();
+    weatherLoop();
     tuyaLoop(); /* let the GUI do its work */
     wifi_scan_check();
     delay(5);
